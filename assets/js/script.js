@@ -12,6 +12,7 @@ var humidity = document.createElement('p');
 var wind = document.createElement('p');
 var icon = document.createElement('img');
 var originalHtml = $('#weather-data').html();
+var noCards = $('#forecast-container').html();
 var recentCities = [];
 if (units !== null) {
     unitButton.text(units);
@@ -51,7 +52,7 @@ const getCoords = async (city) => {
     }
 }
 async function getWeather(latitude, longitude) {
-    await fetch('http://api.openweathermap.org/data/2.5/forecast?lat=' + latitude + '&lon=' + longitude + '&units=' + units + '&appid=91857a7ce4f498927a323c670d50ae2e&cnt=5') 
+    await fetch('http://api.openweathermap.org/data/2.5/forecast?lat=' + latitude + '&lon=' + longitude + '&units=' + units + '&appid=91857a7ce4f498927a323c670d50ae2e&cnt40') 
     .then(function (response) {
         return(response.json());
     })
@@ -89,7 +90,18 @@ const handleWeatherData = () => {
         temp.textContent += "F";
         wind.textContent += " mph";
     }
-
+    createForecastCards();
+}
+const createForecastCards = () => {
+    for (var i = 4; i < weatherData.list.length; i+=8) {
+            console.log('lmao');
+            var card = document.createElement("div");
+            var innerCard = document.createElement("div");
+            card.classList.add("card");
+            innerCard.classList.add("card-body", "forecast");
+            card.append(innerCard);
+            $('#forecast-container').append(card);
+        }
 }
 const manageRecentCities = () => {
     $('#recent-cities').html("");
@@ -124,6 +136,7 @@ function convertToLocalDate(date, localTime) {
 $('#units').on('click', changeUnits);
 $('#button-addon1').on('click', function() {
     $('#weather-data').html(originalHtml);
+    $('#forecast-container').html(noCards);
     if ($('#city-search').val() !== "") {
         getCoords($('#city-search').val());
     }
