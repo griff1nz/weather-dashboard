@@ -13,13 +13,19 @@ var wind = document.createElement('p');
 var icon = document.createElement('img');
 var originalHtml = $('#weather-data').html();
 var noCards = $('#forecast-container').html();
-var recentCities = [];
+var recentCities = JSON.parse(localStorage.getItem('recent-cities'));
+var degree;
+var speed;
 if (units !== null) {
     unitButton.text(units);
 }
 else {
     unitButton.text("Imperial");
 }
+if (recentCities === null) {
+    recentCities = [];
+}
+
 // Functions
 const changeUnits = () => {
     if ($('#units').text() !== 'Metric') {
@@ -70,35 +76,42 @@ const handleWeatherData = () => {
         $('#city-name').text(weatherData.city.name + ", " + weatherData.city.country);
     }
     recentCities.push($('#city-name').text());
+    localStorage.setItem('recent-cities', JSON.stringify(recentCities));
     manageRecentCities();
     $('#city-name').text($('#city-name').text() + " " + timeConversion);
     console.log(weatherData);
     $(icon).attr('src', 'http://openweathermap.org/img/w/' + weatherData.list[0].weather[0].icon +'.png')
     icon.classList.add('ms-2');
     $('#city-name').append(icon);
-    temp.textContent = "Temperature: " + weatherData.list[0].main.temp_max + '°';
+    temp.textContent = "Temperature: " + weatherData.list[0].main.temp_max + '°' + degree;
     $('#weather-data').append(temp);
     humidity.textContent = "Humidity: " + weatherData.list[0].main.humidity + "%";
     $('#weather-data').append(humidity);
-    wind.textContent = "Wind Speed: " + weatherData.list[0].wind.speed;
+    wind.textContent = "Wind Speed: " + weatherData.list[0].wind.speed + speed;
     $('#weather-data').append(wind);
-    if (units === "Metric") {
-        temp.textContent += "C";
-        wind.textContent += " m/s";
-    }
-    else {
-        temp.textContent += "F";
-        wind.textContent += " mph";
-    }
     createForecastCards();
 }
 const createForecastCards = () => {
     for (var i = 4; i < weatherData.list.length; i+=8) {
-            console.log('lmao');
             var card = document.createElement("div");
             var innerCard = document.createElement("div");
+            var dateForecast = document.createElement('h5');
+            var icon2 = document.createElement('img');
+            $(icon2).attr('src', 'http://openweathermap.org/img/w/' + weatherData.list[i].weather[0].icon +'.png');
+            icon2.classList.add('ms-2');
+            dateForecast.textContent = convertToLocalDate(weatherData.list[i].dt, weatherData.city.timezone);
+            dateForecast.append(icon2);
+            var tempForecast = document.createElement('p');
+            tempForecast.textContent = "Temperature: " + weatherData.list[i].main.temp_max + "°" + degree;
+            var humidityForecast = document.createElement('p');
+            humidityForecast.textContent = "Humidity: " + weatherData.list[i].main.humidity;
+            var windForecast = document.createElement("p");
+            windForecast.textContent = "Wind: " + weatherData.list[i].wind.speed + speed;
+            
+            
             card.classList.add("card");
             innerCard.classList.add("card-body", "forecast");
+            innerCard.append(dateForecast, tempForecast, humidityForecast, windForecast);
             card.append(innerCard);
             $('#forecast-container').append(card);
         }
@@ -106,12 +119,25 @@ const createForecastCards = () => {
 const manageRecentCities = () => {
     $('#recent-cities').html("");
     if (recentCities.length > 6) {
-        recentCities.pop();
+        recentCities.shift();
     }
     for (var i = recentCities.length - 1; i >= 0; i-- ) {
-        var recentCity = document.createElement('li');
-        recentCity.classList.add("list-group-item", "mb-1", "mt-1");
+        const recentCity = document.createElement('li');
+        recentCity.classList.add("list-group-item");
         $(recentCity).text(recentCities[i]);
+        $(recentCity).on('click', function() {
+            $('#weather-data').html(originalHtml);
+            $('#forecast-container').html(noCards);
+            if (units === "Metric") {
+                degree = "C";
+                speed = " m/s";
+            }
+            else {
+                degree = "F";
+                speed = " mph";
+            }
+            getCoords($(recentCity).text());
+        })
         $('#recent-cities').append(recentCity);
     }
 }
@@ -132,11 +158,19 @@ function convertToLocalDate(date, localTime) {
 
 
 
-
+manageRecentCities();
 $('#units').on('click', changeUnits);
 $('#button-addon1').on('click', function() {
     $('#weather-data').html(originalHtml);
     $('#forecast-container').html(noCards);
+    if (units === "Metric") {
+        degree = "C";
+        speed = " m/s";
+    }
+    else {
+        degree = "F";
+        speed = " mph";
+    }
     if ($('#city-search').val() !== "") {
         getCoords($('#city-search').val());
     }
