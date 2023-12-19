@@ -39,7 +39,7 @@ const changeUnits = () => {
 };
 const getCoords = async (city) => {
     // city = city.replaceAll(" ", "");
-    await fetch('http://api.openweathermap.org/geo/1.0/direct?q=' + city + '&limit=5&appid=a133f5d8da4ea1e2d3d87f7dfc45d032') //Without await, the rest of the code would execute before receiving a response, meaning there would be no data to assign to townArr
+    await fetch('https://api.openweathermap.org/geo/1.0/direct?q=' + city + '&limit=5&appid=a133f5d8da4ea1e2d3d87f7dfc45d032') //Without await, the rest of the code would execute before receiving a response, meaning there would be no data to assign to townArr
     .then(function (response) {
         return(response.json());
     })
@@ -58,7 +58,7 @@ const getCoords = async (city) => {
     }
 }
 async function getWeather(latitude, longitude) { //Gets the geographical coordinates of the city, then calls handleWeatherData
-    await fetch('http://api.openweathermap.org/data/2.5/forecast?lat=' + latitude + '&lon=' + longitude + '&units=' + units + '&appid=91857a7ce4f498927a323c670d50ae2e&cnt40') 
+    await fetch('https://api.openweathermap.org/data/2.5/forecast?lat=' + latitude + '&lon=' + longitude + '&units=' + units + '&appid=91857a7ce4f498927a323c670d50ae2e&cnt40') 
     .then(function (response) {
         return(response.json());
     })
@@ -81,7 +81,7 @@ const handleWeatherData = () => {
     manageRecentCities();
     $('#city-name').text($('#city-name').text() + " - " + timeConversion);
     console.log(weatherData);
-    $(icon).attr('src', 'http://openweathermap.org/img/w/' + weatherData.list[0].weather[0].icon +'.png')
+    $(icon).attr('src', 'https://openweathermap.org/img/w/' + weatherData.list[0].weather[0].icon +'.png')
     icon.classList.add('ms-2');
     $('#city-name').append(icon);
     temp.textContent = "Temperature: " + weatherData.list[0].main.temp_max + '°' + degree;
@@ -98,7 +98,7 @@ const createForecastCards = () => {
             var innerCard = document.createElement("div");
             var dateForecast = document.createElement('h5');
             var icon2 = document.createElement('img');
-            $(icon2).attr('src', 'http://openweathermap.org/img/w/' + weatherData.list[i].weather[0].icon +'.png');
+            $(icon2).attr('src', 'https://openweathermap.org/img/w/' + weatherData.list[i].weather[0].icon +'.png');
             icon2.classList.add('ms-2');
             dateForecast.textContent = convertToLocalDate(weatherData.list[i].dt, weatherData.city.timezone);
             dateForecast.append(icon2);
