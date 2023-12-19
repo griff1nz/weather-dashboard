@@ -52,12 +52,12 @@ const getCoords = async (city) => {
         lon = townArr[0].lon;
         getWeather(lat, lon);
     }
-    else {
+    else { //Returns nothing if there is no city to search for
         $('#city-name').text("No results found; Try searching for another city.");
         return;
     }
 }
-async function getWeather(latitude, longitude) {
+async function getWeather(latitude, longitude) { //Gets the geographical coordinates of the city, then calls handleWeatherData
     await fetch('http://api.openweathermap.org/data/2.5/forecast?lat=' + latitude + '&lon=' + longitude + '&units=' + units + '&appid=91857a7ce4f498927a323c670d50ae2e&cnt40') 
     .then(function (response) {
         return(response.json());
@@ -75,10 +75,11 @@ const handleWeatherData = () => {
     else { 
         $('#city-name').text(weatherData.city.name + ", " + weatherData.city.country);
     }
+    //Adds the city to the recentCities array
     recentCities.push($('#city-name').text());
     localStorage.setItem('recent-cities', JSON.stringify(recentCities));
     manageRecentCities();
-    $('#city-name').text($('#city-name').text() + " " + timeConversion);
+    $('#city-name').text($('#city-name').text() + " - " + timeConversion);
     console.log(weatherData);
     $(icon).attr('src', 'http://openweathermap.org/img/w/' + weatherData.list[0].weather[0].icon +'.png')
     icon.classList.add('ms-2');
@@ -104,7 +105,7 @@ const createForecastCards = () => {
             var tempForecast = document.createElement('p');
             tempForecast.textContent = "Temperature: " + weatherData.list[i].main.temp_max + "°" + degree;
             var humidityForecast = document.createElement('p');
-            humidityForecast.textContent = "Humidity: " + weatherData.list[i].main.humidity;
+            humidityForecast.textContent = "Humidity: " + weatherData.list[i].main.humidity + "%";
             var windForecast = document.createElement("p");
             windForecast.textContent = "Wind: " + weatherData.list[i].wind.speed + speed;
             
@@ -126,6 +127,7 @@ const manageRecentCities = () => {
         recentCity.classList.add("list-group-item");
         $(recentCity).text(recentCities[i]);
         $(recentCity).on('click', function() {
+            recentCities.splice(recentCities.indexOf(recentCity.textContent), 1);
             $('#weather-data').html(originalHtml);
             $('#forecast-container').html(noCards);
             if (units === "Metric") {
@@ -134,7 +136,7 @@ const manageRecentCities = () => {
             }
             else {
                 degree = "F";
-                speed = " mph";
+                speed = " mph"; //have to copy and paste this here as well so the units will update no matter how the getCoords method is called
             }
             getCoords($(recentCity).text());
         })
@@ -149,7 +151,7 @@ function convertToLocalDate(date, localTime) {
     }
     return(theDate.toUTCString() + (hours));  //https://www.epochconverter.com/programming/#javascript
 }
-// const generateRecommendations = async (output) => { (I might implement this when done but chances are it will create 69696969 API calls per minute)
+// const generateRecommendations = async (output) => { (I might implement this later)
 //     if (output !== '') {
 //         var recommendations = document.createElement('ul');
 //     }
@@ -158,7 +160,7 @@ function convertToLocalDate(date, localTime) {
 
 
 
-manageRecentCities();
+manageRecentCities(); // create the recent cities list from localStorage
 $('#units').on('click', changeUnits);
 $('#button-addon1').on('click', function() {
     $('#weather-data').html(originalHtml);
